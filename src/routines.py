@@ -6,37 +6,21 @@ import matplotlib.pyplot as plt
 
 
 def weight_variable(shape):
-
     initial = tf.truncated_normal(shape, stddev=0.01)
-    initial = tf.truncated_normal(shape, stddev=0.1)
+    #initial = tf.truncated_normal(shape, stddev=0.1)
     return tf.Variable(initial)
 
 
 def bias_variable(shape):
     initial = tf.truncated_normal(shape, stddev=0.01)
-    initial = tf.truncated_normal(shape, stddev=0.1)
+    #initial = tf.truncated_normal(shape, stddev=0.1)
     return tf.Variable(initial)
-
 
 def leaky_relu(x, alpha):
     return tf.maximum(x, alpha * x)
 
-
 def to_image_form(data):
     return np.reshape(data, (32, 64, 2))
-
-
-def load_data():
-    training_image = []
-    training_val = []
-    for i in range(1, 32):
-        if i == 16: continue
-        path = "../res/karman_data_norm/vel" + str(i) + ".npy"
-        training_image.append(np.load(path).flatten())
-        training_val.append(i / 32.0)
-
-    training_data = [np.reshape(training_val, (30, 1)), training_image]
-    return training_data
 
 def shuffle(data):
 	#np.random.seed(239)
@@ -50,24 +34,14 @@ def load_data_3():
 
     for yy in range(8,24):
     	for xx in range(10,41):
-    		for rr in range(2,7):
-        		path = "../res/karman_data_new/vel_"+str(xx)+"_"+str(yy)+"_"+str(rr)+".npy"
+    		for rr in range(4,9):
+        		path = "../res/karman_data_1711_norm/vel_"+str(xx)+"_"+str(yy)+"_"+str(rr)+".npy"
         		image.append(np.load(path).flatten())
         		vec.append([xx , yy , rr])
 
     data = [np.asarray(vec), np.asarray(image)]
     shuffle(data)
     return data
-
-def get_scale_factor(x_pos, y_pos, r):
-    index = int((y_pos-8)*155 + (x_pos-10)*5 + r-2)
-    return np.load("../res/karman_data_new_norm/scale_factors.npy")[index]
-
-
-def get_time_scale_factor(x):
-    index = int(x[0] * 32 - 1) * 50 + x[1]
-    return np.load("../res/timestep_norm/scale_factors.npy")[index]
-
 
 def save_csv(data, path):
     with open(path, "w") as file:
@@ -79,7 +53,7 @@ def save_csv(data, path):
 def plot(img,loc):
 	name = str(loc[0]) + "_" + str(loc[1]) + "_" + str(loc[2])
 	#name = str(loc[1])
-	real_flow = np.load("../res/karman_data_new/vel_"+name+".npy")
+	real_flow = np.load("../res/karman_data_1711/vel_"+name+".npy")
 	net_flow = img
 
 	# takes ONE real flow and ONE output from network and compares them
