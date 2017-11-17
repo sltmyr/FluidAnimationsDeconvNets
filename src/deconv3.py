@@ -85,10 +85,10 @@ def test(x, output, sess, test_data):
     net_output_y = sess.run(output, feed_dict={x: test_data[0][0:batch_size]})
     
     output_image = to_image_form(net_output_y[0])
-    output_image[:,:,0] *= np.load("../res/karman_data_1711_norm/norm_factor_x.py")
-    output_image[:,:,1] *= np.load("../res/karman_data_1711_norm/norm_factor_y.py")
-    output_image[:,:,0] += np.load("../res/karman_data_1711_norm/mean_x.py")
-    output_image[:,:,1] += np.load("../res/karman_data_1711_norm/mean_y.py")
+    output_image[:,:,0] *= np.load("../res/karman_data_1711_norm/norm_factor_x.npy")
+    output_image[:,:,1] *= np.load("../res/karman_data_1711_norm/norm_factor_y.npy")
+    output_image[:,:,0] += np.load("../res/karman_data_1711_norm/mean_x.npy")
+    output_image[:,:,1] += np.load("../res/karman_data_1711_norm/mean_y.npy")
     
     np.save("../res/net_image",output_image)
     plot(output_image,test_data[0][0])
