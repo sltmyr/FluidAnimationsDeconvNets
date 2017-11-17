@@ -118,4 +118,3 @@ def plot(img,loc):
 	           real_flow[::skip, ::skip, 1] - net_flow[::skip, ::skip, 1], scale=real_max, units='inches')
 	ax3.add_artist(circle3)
 	plt.show()
-	exit()
