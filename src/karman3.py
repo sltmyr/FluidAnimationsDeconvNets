@@ -3,7 +3,7 @@ from manta import *
 
 for yy in range(8,24):
 	for xx in range(10,41):
-		for rr in range(2,7):
+		for rr in range(4,9):
 			secOrderBc = True
 			dim        = 2
 			res        = 32
@@ -108,5 +108,5 @@ for yy in range(8,24):
 			#print(npVel.shape)
 			#print(npVel)
 			#path = "/Users/kirmaks/Downloads/manta_0_11/scenes/karman_data/vel"+str(cc)
-			path = "../res/karman_data_new/vel_"+str(xx)+"_"+str(yy)+"_"+str(rr)
+			path = "../res/karman_data_1711/vel_"+str(xx)+"_"+str(yy)+"_"+str(rr)
 			np.save(path, npVel)
