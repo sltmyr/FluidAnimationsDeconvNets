@@ -26,13 +26,14 @@ def create_net(x):
     # fully connected layers
     x = fc_layer(x, 3, 16)
     x = fc_layer(x, 16, 256)
+    x = fc_layer(x, 256, 4096)
     x = tf.layers.batch_normalization(x, 1)
-    x = tf.reshape(x, [batch_size, 4, 2, 32])
+    x = tf.reshape(x, [batch_size, 4, 2, 512])
 
     # deconvolutional layers
-    x = conv_layer(x, 8, 4, 16)
-    x = conv_layer(x, 16, 8, 8)
-    x = conv_layer(x, 32, 16, 4)
+    x = conv_layer(x, 8, 4, 128)
+    x = conv_layer(x, 16, 8, 32)
+    x = conv_layer(x, 32, 16, 8)
     x = conv_layer(x, 64, 32, 2, linear=True)
 
     output = tf.reshape(x, [batch_size, 4096])
@@ -65,11 +66,14 @@ def validate(x, output, sess, validation_data):
 
 def train_epoch(x, ground_truth, train_step, loss, sess, training_data):
     shuffle(training_data)
-    for batch in range(int(len(training_data[0])/batch_size)):
+    train_error = 0.0
+    num_batches = int(len(training_data[0])/batch_size)
+    for batch in range(num_batches):
         training_batch_x = training_data[0][batch*batch_size:(batch+1)*batch_size]
         training_batch_y = training_data[1][batch*batch_size:(batch+1)*batch_size]
         _, loss_val = sess.run([train_step, loss], feed_dict={x: training_batch_x, ground_truth: training_batch_y})
-    return loss_val
+        train_error += loss_val
+    return train_error/num_batches
 
 def test(x, output, sess, test_data):
     test_error = validate(x, output, sess, test_data)
