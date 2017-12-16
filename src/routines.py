@@ -3,6 +3,7 @@ import numpy as np
 import csv
 import math
 import matplotlib.pyplot as plt
+import matplotlib.cm as cm 
 
 
 def weight_variable(shape):
@@ -61,20 +62,27 @@ def plot(img,loc):
 
 	skip = 2
 	X, Y = np.mgrid[0:image_size[0]:skip, 0:image_size[1]:skip]
-	[f, (ax1, ax2, ax3)] = plt.subplots(3, sharex=True, sharey=True)
+	f, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, sharex=True, sharey=True)
+	
+	# velocity plot of the real flow (ground truth)
+	
 	ax1.quiver(X, Y, real_flow[::skip, ::skip, 0], real_flow[::skip, ::skip, 1], units='inches')
-	circle1 = plt.Circle((loc[0], loc[1]), loc[2], color='r')
-	circle2 = plt.Circle((loc[0], loc[1]), loc[2], color='r')
-	circle3 = plt.Circle((loc[0], loc[1]), loc[2], color='r')
+	circle1 = plt.Circle((loc[0], loc[1]), loc[2], color='k')
+	circle2 = plt.Circle((loc[0], loc[1]), loc[2], color='k')
+	circle3 = plt.Circle((loc[0], loc[1]), loc[2], color='k')
+	circle4 = plt.Circle((loc[0], loc[1]), loc[2], color='k')
 	ax1.add_artist(circle1)
 
 	ax1.set_title("Real flow")
-	ax1.set_xlim(0, image_size[0])
-	ax1.set_ylim(0, image_size[1])
-	ax2.set_title("Output of network")
+	ax1.set_xlim(0, image_size[0]-1)
+	ax1.set_ylim(0, image_size[1]-1)
+	
+	# velocity plot of the generated flow (network output)
+	ax2.set_title("Network output")
 	ax2.quiver(X, Y, net_flow[::skip, ::skip, 0], net_flow[::skip, ::skip, 1], units='inches')
 	ax2.add_artist(circle2)
-	# compute error
+	
+	# error computations
 	diff_flow = (real_flow[:, :, 0] - net_flow[:, :, 0]) ** 2 + (real_flow[:, :, 1] - net_flow[:, :, 1]) ** 2
 	diff_norm = math.sqrt(np.sum(diff_flow))
 	
@@ -82,11 +90,18 @@ def plot(img,loc):
 	real_norm = math.sqrt(np.sum(real_flow_sq))
 	print("Average error: %f" % (diff_norm / real_norm))
 	
+	# velocity difference
 	real_max = np.amax(real_flow_sq)
 	diff_max = np.amax(diff_flow)
-
-	ax3.set_title("Plot of velocity differences (real-net)")
+	ax3.set_title("Difference")
 	ax3.quiver(X, Y, real_flow[::skip, ::skip, 0] - net_flow[::skip, ::skip, 0],
 	           real_flow[::skip, ::skip, 1] - net_flow[::skip, ::skip, 1], scale=real_max, units='inches')
 	ax3.add_artist(circle3)
+	
+	# velocity difference (color-coded)
+	ax4.set_title("Difference (color-coded)")
+	Xall, Yall = np.mgrid[0:image_size[0], 0:image_size[1]]
+	ax4.pcolormesh(Xall, Yall, diff_flow, cmap = cm.Reds)
+	ax4.add_artist(circle4)
+	
 	plt.show()
