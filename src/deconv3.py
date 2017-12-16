@@ -1,7 +1,7 @@
 from routines import *
 
 batch_size = 50
-epochs = 10
+epochs = 100
 
 def conv_layer(input, width, height, channels, linear=False):
     output_shape = [batch_size, width, height, channels]
@@ -26,7 +26,7 @@ def create_net(x):
     # fully connected layers
     x = fc_layer(x, 3, 16)
     x = fc_layer(x, 16, 256)
-
+    x = tf.layers.batch_normalization(x, 1)
     x = tf.reshape(x, [batch_size, 4, 2, 32])
 
     # deconvolutional layers
@@ -39,7 +39,14 @@ def create_net(x):
     return tf.tanh(output)
 
 def create_trainer(output, ground_truth):
-    loss = tf.reduce_mean(tf.reduce_sum(tf.pow(ground_truth - output, 2), reduction_indices=[1]))
+    #loss = tf.reduce_mean(tf.reduce_sum(tf.pow(ground_truth - output, 2), reduction_indices=[1]))
+
+    loss = tf.reduce_mean(
+         		tf.sqrt(
+                	tf.reduce_sum(tf.pow(tf.subtract(ground_truth,output), 2),reduction_indices=[1])
+                   	/ tf.reduce_sum(tf.pow(ground_truth,2),reduction_indices=[1])))
+
+
     global_step = tf.Variable(0, trainable=False)
     lr = tf.train.exponential_decay(0.01, global_step, 50, 0.95)
     #lr = tf.train.piecewise_constant(global_step, [5000, 8000], [0.1, 0.05, 0.01])
@@ -104,12 +111,11 @@ def run():
         print("Loss: ", loss_data[i])
         val_error_data[i] = validate(x, output, sess, validation_data)
 
-    test_error = test(x, output, sess, test_data)
-
-    print("Mean Squared Error on test set: ", test_error)
-
     save_csv(loss_data, "../res/train_loss.csv")
     save_csv(val_error_data, "../res/validation_error.csv")
+
+    test_error = test(x, output, sess, test_data)
+    print("Mean Squared Error on test set: ", test_error)
 
 if __name__ == "__main__":
     run()
