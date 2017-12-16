@@ -37,16 +37,15 @@ def create_net(x):
 
     output = tf.reshape(x, [batch_size, 4096])
     return tf.tanh(output)
+    
+def compute_l2_loss(output, ground_truth):
+    return tf.reduce_mean(
+             		tf.sqrt(
+                    	tf.reduce_sum(tf.pow(tf.subtract(ground_truth,output), 2),reduction_indices=[1])
+                       	/ tf.reduce_sum(tf.pow(ground_truth,2),reduction_indices=[1])))
 
 def create_trainer(output, ground_truth):
-    #loss = tf.reduce_mean(tf.reduce_sum(tf.pow(ground_truth - output, 2), reduction_indices=[1]))
-
-    loss = tf.reduce_mean(
-         		tf.sqrt(
-                	tf.reduce_sum(tf.pow(tf.subtract(ground_truth,output), 2),reduction_indices=[1])
-                   	/ tf.reduce_sum(tf.pow(ground_truth,2),reduction_indices=[1])))
-
-
+    loss = compute_l2_loss(output, ground_truth)
     global_step = tf.Variable(0, trainable=False)
     lr = tf.train.exponential_decay(0.01, global_step, 50, 0.95)
     #lr = tf.train.piecewise_constant(global_step, [5000, 8000], [0.1, 0.05, 0.01])
@@ -60,10 +59,8 @@ def validate(x, output, sess, validation_data):
         validation_batch_x = validation_data[0][batch*batch_size:(batch+1)*batch_size]
         validation_batch_y = validation_data[1][batch*batch_size:(batch+1)*batch_size]
         net_output_y = sess.run(output, feed_dict={x: validation_batch_x})
-        error += tf.reduce_mean(
-         			tf.sqrt(
-                       	tf.reduce_sum(tf.pow(tf.subtract(validation_batch_y,net_output_y), 2),reduction_indices=[1])
-                       	/ tf.reduce_sum(tf.pow(validation_batch_y,2),reduction_indices=[1]))).eval()
+        error += compute_l2_loss(net_output_y, validation_batch_y).eval()
+   
     return error/num_batches
 
 def train_epoch(x, ground_truth, train_step, loss, sess, training_data):
