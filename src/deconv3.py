@@ -47,19 +47,6 @@ def create_trainer(output, ground_truth):
     train_step = tf.train.AdamOptimizer(lr).minimize(loss, global_step=global_step)
     return train_step, loss
 
-def train(x, ground_truth, train_step, loss, sess, training_data):
-    loss_data = {}
-    for i in range(epochs):
-        shuffle(training_data)
-        for batch in range(int(len(training_data[0])/batch_size)):
-            training_batch_x = training_data[0][batch*batch_size:(batch+1)*batch_size]
-            training_batch_y = training_data[1][batch*batch_size:(batch+1)*batch_size]
-            _, loss_val = sess.run([train_step, loss], feed_dict={x: training_batch_x, ground_truth: training_batch_y})
-        print("Epoch {}: Loss = {}".format(i, loss_val))
-        loss_data[i] = loss_val
-
-    save_csv(loss_data, "../res/training_memorize_all.csv")
-
 def validate(x, output, sess, validation_data):
     error = 0.
     num_batches = int(len(validation_data[0])/batch_size)
@@ -72,6 +59,14 @@ def validate(x, output, sess, validation_data):
                         	tf.reduce_sum(tf.pow(tf.subtract(validation_batch_y,net_output_y), 2),reduction_indices=[1]) 
                         	/ tf.reduce_sum(tf.pow(validation_batch_y,2),reduction_indices=[1]))).eval()
     return error/num_batches
+
+def train_epoch(x, ground_truth, train_step, loss, sess, training_data):
+    shuffle(training_data)
+    for batch in range(int(len(training_data[0])/batch_size)):
+        training_batch_x = training_data[0][batch*batch_size:(batch+1)*batch_size]
+        training_batch_y = training_data[1][batch*batch_size:(batch+1)*batch_size]
+        _, loss_val = sess.run([train_step, loss], feed_dict={x: training_batch_x, ground_truth: training_batch_y})
+    return loss_val 
 
 def test(x, output, sess, test_data):
     test_error = validate(x, output, sess, test_data)
@@ -102,12 +97,20 @@ def run():
     test_data = [data[0] [1800:2100,:], data[1][1800:2100,:]]
     validation_data = [data[0][2100:2400,:], data[1][2100:2400,:]]
 
-    train(x, ground_truth, train_step, loss, sess, training_data)
-
-    validation_error = validate(x, output, sess, validation_data)
+    loss_data = {}
+    val_error_data = {}
+    for i in range(epochs):
+        loss_data[i] = train_epoch(x, ground_truth, train_step, loss, sess, training_data)
+        print("Epoch: ", i)
+        print("Loss: ", loss_data[i])
+        val_error_data[i] = validate(x, output, sess, validation_data)
+    
     test_error = test(x, output, sess, test_data)   
-    print("Mean Squared Error on validation set: ",validation_error)
+    
     print("Mean Squared Error on test set: ", test_error)
+    
+    save_csv(loss_data, "../res/train_loss.csv")
+    save_csv(val_error_data, "../res/validation_error.csv")
 
 if __name__ == "__main__":
     run()
