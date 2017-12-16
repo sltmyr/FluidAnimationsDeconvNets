@@ -60,13 +60,14 @@ def plot(img,loc):
 	net_flow = net_flow.transpose((1, 0, 2))
 	image_size = real_flow.shape
 
-	skip = 2
-	X, Y = np.mgrid[0:image_size[0]:skip, 0:image_size[1]:skip]
+	skip = 3
+	X, Y = np.mgrid[1:image_size[0]:skip, 1:image_size[1]:skip]
 	f, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, sharex=True, sharey=True)
 	
 	# velocity plot of the real flow (ground truth)
 	
-	ax1.quiver(X, Y, real_flow[::skip, ::skip, 0], real_flow[::skip, ::skip, 1], units='inches')
+	widths = 1.0
+	ax1.quiver(X, Y, real_flow[1::skip, 1::skip, 0], real_flow[1::skip, 1::skip, 1], scale = 5.0, units='inches', linewidths=widths)
 	circle1 = plt.Circle((loc[0], loc[1]), loc[2], color='k')
 	circle2 = plt.Circle((loc[0], loc[1]), loc[2], color='k')
 	circle3 = plt.Circle((loc[0], loc[1]), loc[2], color='k')
@@ -79,7 +80,7 @@ def plot(img,loc):
 	
 	# velocity plot of the generated flow (network output)
 	ax2.set_title("Network output")
-	ax2.quiver(X, Y, net_flow[::skip, ::skip, 0], net_flow[::skip, ::skip, 1], units='inches')
+	ax2.quiver(X, Y, net_flow[1::skip, 1::skip, 0], net_flow[1::skip, 1::skip, 1], scale = 5.0, units='inches', linewidths=widths)
 	ax2.add_artist(circle2)
 	
 	# error computations
@@ -94,8 +95,8 @@ def plot(img,loc):
 	real_max = np.amax(real_flow_sq)
 	diff_max = np.amax(diff_flow)
 	ax3.set_title("Difference")
-	ax3.quiver(X, Y, real_flow[::skip, ::skip, 0] - net_flow[::skip, ::skip, 0],
-	           real_flow[::skip, ::skip, 1] - net_flow[::skip, ::skip, 1], scale=real_max, units='inches')
+	ax3.quiver(X, Y, real_flow[1::skip, 1::skip, 0] - net_flow[1::skip, 1::skip, 0],
+	           real_flow[1::skip, 1::skip, 1] - net_flow[1::skip, 1::skip, 1], scale = 5.0, units='inches', linewidths=widths)
 	ax3.add_artist(circle3)
 	
 	# velocity difference (color-coded)
