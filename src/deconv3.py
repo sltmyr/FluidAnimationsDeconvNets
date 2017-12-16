@@ -3,6 +3,7 @@ from routines import *
 batch_size = 50
 epochs = 100
 
+
 def conv_layer(input, width, height, channels, linear=False):
     output_shape = [batch_size, width, height, channels]
     strides = [1, 2, 2, 1]
@@ -75,13 +76,22 @@ def train_epoch(x, ground_truth, train_step, loss, sess, training_data):
 
 def test(x, output, sess, test_data):
     test_error = validate(x, output, sess, test_data)
-    net_output_y = sess.run(output, feed_dict={x: test_data[0][0:batch_size]})
-
+    
+    num_batches = int(len(test_data[0])/batch_size)    
+    for batch in range(num_batches):
+        test_batch_x = test_data[0][batch*batch_size:(batch+1)*batch_size]
+        net_output_y = sess.run(output, feed_dict={x: test_batch_x})
+        for i in range(batch_size):
+            output_image = to_image_form(net_output_y[i])
+            output_image = denormalize(output_image)
+        
+    	    name = test_data[0][i]
+            name = str(name[0]) + "_" + str(name[1]) + "_" + str(name[2])
+    	    np.save("../res/network_output/vel_"+name+".npy", output_image)
+        
+    net_output_y = sess.run(output, feed_dict={x: test_data[0][0:batch_size]})    
     output_image = to_image_form(net_output_y[0])
-    output_image[:, :, 0] *= np.load("../res/karman_data_1711_norm/norm_factor_x.npy")
-    output_image[:, :, 1] *= np.load("../res/karman_data_1711_norm/norm_factor_y.npy")
-    output_image[:, :, 0] += np.load("../res/karman_data_1711_norm/mean_x.npy")
-    output_image[:, :, 1] += np.load("../res/karman_data_1711_norm/mean_y.npy")
+    output_image = denormalize(output_image)
     
     np.save("../res/net_image",output_image)
     plot(output_image,test_data[0][0])

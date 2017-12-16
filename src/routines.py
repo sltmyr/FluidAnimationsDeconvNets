@@ -10,6 +10,13 @@ def weight_variable(shape):
     initial = tf.truncated_normal(shape, stddev=0.1)
     return tf.Variable(initial)
 
+def denormalize(output_image):
+    output_image[:, :, 0] *= np.load("../res/karman_data_1711_norm/norm_factor_x.npy")
+    output_image[:, :, 1] *= np.load("../res/karman_data_1711_norm/norm_factor_y.npy")
+    output_image[:, :, 0] += np.load("../res/karman_data_1711_norm/mean_x.npy")
+    output_image[:, :, 1] += np.load("../res/karman_data_1711_norm/mean_y.npy")
+    return output_image
+
 
 def bias_variable(shape):
     initial = tf.truncated_normal(shape, stddev=0.1)
@@ -51,7 +58,6 @@ def save_csv(data, path):
 
 def plot(img,loc):
 	name = str(loc[0]) + "_" + str(loc[1]) + "_" + str(loc[2])
-	#name = str(loc[1])
 	real_flow = np.load("../res/karman_data_1711/vel_"+name+".npy")
 	net_flow = img
 
