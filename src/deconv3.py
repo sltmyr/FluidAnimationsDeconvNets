@@ -89,11 +89,11 @@ def test(x, output, sess, test_data):
     	    np.save("../res/network_output/vel_"+name+".npy", output_image)
         
     net_output_y = sess.run(output, feed_dict={x: test_data[0][0:batch_size]})    
-    output_image = to_image_form(net_output_y[0])
+    output_image = to_image_form(net_output_y[2])
     output_image = denormalize(output_image)
     
     np.save("../res/net_image",output_image)
-    plot(output_image,test_data[0][0])
+    plot(output_image,test_data[0][2])
     
     return test_error
 
