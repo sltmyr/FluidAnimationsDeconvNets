@@ -1,8 +1,7 @@
 from routines import *
-import random
 
 batch_size = 50
-epochs = 100
+epochs = 10
 
 def conv_layer(input, width, height, channels, linear=False):
     output_shape = [batch_size, width, height, channels] #[batch_size, height, width, channels]
@@ -17,32 +16,24 @@ def conv_layer(input, width, height, channels, linear=False):
         output = tf.maximum(output, 0.2*output)
     return output
 
+def fc_layer(input,input_size,output_size):
+	w = weight_variable([input_size,output_size])
+	b = bias_variable([1,output_size])
+	return tf.tanh(tf.add(tf.matmul(input,w),b))
+
 
 def create_net(x):
-    # fully connected layer
-    fc_neurons = 4096
-    w_fc0 = weight_variable([3,fc_neurons])
-    b_fc0 = bias_variable([1,fc_neurons])
-    x = tf.tanh(tf.add(tf.matmul(x,w_fc0),b_fc0))
-    x = tf.reshape(x, [batch_size,8,4,128]) #hidden: 16x8x8, 8 channels of 16x8 layers
+    # fully connected layers
+    x = fc_layer(x,3,16);
+    x = fc_layer(x,16,256);
+
+    x = tf.reshape(x, [batch_size,4,2,32])
 
     # deconvolutional layers
-    x = conv_layer(x,16,8,32)
-    x = conv_layer(x,32,16,8)
+    x = conv_layer(x,8,4,16)
+    x = conv_layer(x,16,8,8)
+    x = conv_layer(x,32,16,4)
     x = conv_layer(x,64,32,2, linear=True)
-
-
-    # fc_neurons = 4096
-    # w_fc0 = weight_variable([3,fc_neurons])
-    # b_fc0 = bias_variable([1,fc_neurons])
-    # x = tf.tanh(tf.add(tf.matmul(x,w_fc0),b_fc0))
-    # x = tf.reshape(x, [batch_size,4,2,512]) #hidden: 16x8x8, 8 channels of 16x8 layers
-
-    # # deconvolutional layers
-    # x = conv_layer(x,8,4,256)
-    # x = conv_layer(x,16,8,128)
-    # x = conv_layer(x,32,16,64)
-    # x = conv_layer(x,64,32,2, linear=True)
 
     output = tf.reshape(x, [batch_size,4096])
     return tf.tanh(output)
@@ -50,7 +41,8 @@ def create_net(x):
 def create_trainer(output, ground_truth):
     loss = tf.reduce_mean(tf.reduce_sum(tf.pow(ground_truth - output, 2), reduction_indices=[1]))
     global_step = tf.Variable(0, trainable=False)
-    lr = tf.train.exponential_decay(0.00001,global_step,1000,0.95)
+    lr = tf.train.exponential_decay(0.01,global_step,50,0.95)
+    print(global_step)
     #lr = tf.train.piecewise_constant(global_step, [5000, 8000], [0.1, 0.05, 0.01])
     train_step = tf.train.AdamOptimizer(lr).minimize(loss, global_step=global_step)
     return train_step, loss
@@ -76,8 +68,9 @@ def validate(x, output, sess, validation_data):
             validation_batch_y = validation_data[1][batch*batch_size:(batch+1)*batch_size]
             net_output_y = sess.run(output, feed_dict={x: validation_batch_x})
             error += tf.reduce_mean(
-                        tf.reduce_sum(tf.pow(validation_batch_y- net_output_y, 2),reduction_indices=[1]) 
-                        / tf.reduce_sum(tf.pow(validation_batch_y,2),reduction_indices=[1])).eval()
+            			tf.sqrt(
+                        	tf.reduce_sum(tf.pow(tf.subtract(validation_batch_y,net_output_y), 2),reduction_indices=[1]) 
+                        	/ tf.reduce_sum(tf.pow(validation_batch_y,2),reduction_indices=[1]))).eval()
     return error/num_batches
 
 def test(x, output, sess, test_data):
