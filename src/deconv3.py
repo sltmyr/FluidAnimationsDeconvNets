@@ -1,7 +1,7 @@
 from routines import *
 
 batch_size = 50
-epochs = 100
+epochs = 2
 
 
 def conv_layer(input, width, height, channels, linear=False):
@@ -85,9 +85,9 @@ def test(x, output, sess, test_data):
             output_image = to_image_form(net_output_y[i])
             output_image = denormalize(output_image)
         
-    	    name = test_data[0][i]
+            name = test_data[0][i]
             name = str(name[0]) + "_" + str(name[1]) + "_" + str(name[2])
-    	    np.save("../res/network_output/vel_"+name+".npy", output_image)
+            np.save("../res/network_output/vel_"+name+".npy", output_image)
         
     net_output_y = sess.run(output, feed_dict={x: test_data[0][0:batch_size]})    
     output_image = to_image_form(net_output_y[0])
