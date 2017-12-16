@@ -1,7 +1,7 @@
 from routines import *
 
 batch_size = 50
-epochs = 100
+epochs = 1
 
 def conv_layer(input, width, height, channels, linear=False):
     output_shape = [batch_size, width, height, channels]
@@ -26,13 +26,13 @@ def create_net(x):
     # fully connected layers
     x = fc_layer(x, 3, 16)
     x = fc_layer(x, 16, 256)
-    x = fc_layer(x, 256, 4096)
+    x = fc_layer(x, 256, 512)
     x = tf.layers.batch_normalization(x, 1)
-    x = tf.reshape(x, [batch_size, 4, 2, 512])
+    x = tf.reshape(x, [batch_size, 4, 2, 64])
 
     # deconvolutional layers
-    x = conv_layer(x, 8, 4, 128)
-    x = conv_layer(x, 16, 8, 32)
+    x = conv_layer(x, 8, 4, 32)
+    x = conv_layer(x, 16, 8, 16)
     x = conv_layer(x, 32, 16, 8)
     x = conv_layer(x, 64, 32, 2, linear=True)
 
