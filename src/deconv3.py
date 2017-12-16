@@ -1,7 +1,7 @@
 from routines import *
 
 batch_size = 50
-epochs = 1
+epochs = 100
 
 def conv_layer(input, width, height, channels, linear=False):
     output_shape = [batch_size, width, height, channels]
