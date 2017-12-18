@@ -29,7 +29,7 @@ def to_image_form(data):
     return np.reshape(data, (32, 64, 2))
 
 def shuffle(data):
-	#np.random.seed(239)
+	np.random.seed(239)
 	shuffle_idx = np.random.permutation(len(data[0]))
 	data[0][:] = data[0][shuffle_idx]
 	data[1][:] = data[1][shuffle_idx]
